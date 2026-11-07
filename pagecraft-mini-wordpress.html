@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PageCraft — Website Builder</title>
+<style>
+:root{--bg:#10131a;--panel:#181d27;--panel2:#202735;--line:#303949;--text:#f4f6fb;--muted:#9aa6b7;--accent:#b77942;--paper:#fffaf3}
+*{box-sizing:border-box}body{margin:0;font:14px/1.45 Inter,system-ui,Arial,sans-serif;background:var(--bg);color:var(--text)}
+button,input,textarea,select{font:inherit}button{cursor:pointer}
+.topbar{height:62px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 18px;background:#141923;gap:12px}
+.logo{font-weight:800;font-size:17px;letter-spacing:-.5px}.logo b{color:#d9a36e}.top-actions,.devices{display:flex;align-items:center;gap:8px}
+.btn{border:1px solid var(--line);background:var(--panel2);color:var(--text);padding:9px 12px;border-radius:9px;font-size:12px;font-weight:650}.btn.primary{background:#b77942;border-color:#b77942;color:#17120e}.btn:hover{filter:brightness(1.12)}
+.layout{height:calc(100vh - 62px);display:grid;grid-template-columns:340px minmax(0,1fr)}
+.sidebar{overflow:auto;background:var(--panel);border-right:1px solid var(--line);padding:18px}
+.side-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px}.side-head h2{font-size:14px;margin:0}.muted{color:var(--muted);font-size:12px}
+.field{margin:12px 0}.field label{display:block;color:#c4ccda;font-size:11px;font-weight:700;margin-bottom:6px}.field input,.field textarea,.field select{width:100%;border:1px solid var(--line);background:#10151e;color:var(--text);padding:10px;border-radius:8px;outline:none}.field textarea{resize:vertical;min-height:66px}.field input:focus,.field textarea:focus,.field select:focus{border-color:#c58b55}
+.group{border-top:1px solid var(--line);padding:15px 0}.group h3{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:#d0a477;margin:0 0 10px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.color-row{display:flex;gap:9px;align-items:center}.color-row input{width:42px;height:36px;padding:3px}
+.section-row{display:flex;align-items:center;justify-content:space-between;padding:9px 10px;border:1px solid var(--line);border-radius:9px;margin:7px 0;background:#121822}.section-row span{font-size:12px;font-weight:650}.section-row button{border:0;background:transparent;color:#b7c1d0;padding:3px 7px}.section-row button:disabled{opacity:.25;cursor:not-allowed}
+.editor-section{border:1px solid var(--line);border-radius:10px;padding:11px;margin:9px 0;background:#141a24}.editor-section summary{font-size:12px;font-weight:700;cursor:pointer;color:#e9edf5}.editor-section[hidden]{display:none}
+.preview-area{padding:22px;overflow:auto;display:flex;flex-direction:column;align-items:center;background:radial-gradient(ellipse at top,#252d3a,#10131a 70%)}
+.preview-toolbar{height:40px;max-width:1200px;width:100%;display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;color:var(--muted);font-size:11px}
+.frame{width:100%;max-width:1200px;height:calc(100% - 50px);min-height:500px;background:white;border-radius:12px;overflow:hidden;box-shadow:0 25px 70px #0008;transition:width .2s}
+iframe{width:100%;height:100%;border:0;background:white}
+@media(max-width:850px){.layout{grid-template-columns:300px minmax(0,1fr)}.preview-area{padding:12px}}
+@media(max-width:650px){.topbar{height:auto;min-height:60px;flex-wrap:wrap;padding:10px}.layout{height:auto;min-height:calc(100vh - 60px);display:flex;flex-direction:column}.sidebar{max-height:none;overflow:visible;border-right:0;border-bottom:1px solid var(--line)}.preview-area{height:75vh;min-height:520px}.frame{height:calc(100% - 45px)}.devices .btn{padding:7px}}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="logo">PageCraft <b>Studio</b> <span class="muted">/ Mini site builder</span></div>
+  <div class="top-actions">
+    <div class="devices">
+      <button class="btn" onclick="setDevice('desktop')">Desktop</button>
+      <button class="btn" onclick="setDevice('tablet')">Tablet</button>
+      <button class="btn" onclick="setDevice('mobile')">Mobile</button>
+    </div>
+    <button class="btn" onclick="saveProject()">Save</button>
+    <button class="btn" onclick="exportHTML()">Export HTML</button>
+  </div>
+</header>
+<div class="layout">
+<aside class="sidebar">
+  <div class="side-head"><h2>Homepage editor</h2><span class="muted" id="saveStatus">Not saved</span></div>
+  <div class="field"><label>START WITH A TEMPLATE</label><select id="template" onchange="loadTemplate(this.value)"><option value="restaurant">Restaurant / Café</option><option value="business">Local business</option><option value="portfolio">Personal portfolio</option><option value="agency">Digital agency</option></select></div>
+  <div class="group">
+    <h3>Brand & appearance</h3>
+    <div class="field"><label>Business / brand name</label><input id="brand" oninput="update()"></div>
+    <div class="grid2">
+      <div class="field"><label>Accent color</label><div class="color-row"><input id="accent" type="color" oninput="update()"><span class="muted" id="colorValue"></span></div></div>
+      <div class="field"><label>Font style</label><select id="font" onchange="update()"><option value="serif">Elegant serif</option><option value="sans">Modern sans</option></select></div>
+    </div>
+    <div class="field"><label>Logo text (leave blank to use name)</label><input id="logo" oninput="update()"></div>
+  </div>
+  <div class="group">
+    <h3>Homepage sections</h3>
+    <p class="muted">Show or hide sections, and move them up or down.</p>
+    <div id="sectionList"></div>
+  </div>
+  <div id="sectionEditors"></div>
+  <div class="group">
+    <h3>Contact & links</h3>
+    <div class="field"><label>Phone / WhatsApp number</label><input id="phone" placeholder="+92 300 1234567" oninput="update()"></div>
+    <div class="field"><label>Address</label><input id="address" oninput="update()"></div>
+    <div class="field"><label>Instagram URL</label><input id="instagram" placeholder="https://instagram.com/yourbrand" oninput="update()"></div>
+    <div class="field"><label>Footer note</label><input id="footer" oninput="update()"></div>
+  </div>
+  <div class="top-actions"><button class="btn" onclick="resetProject()">Reset template</button><button class="btn primary" onclick="saveProject()">Save project</button></div>
+</aside>
+<main class="preview-area">
+  <div class="preview-toolbar"><span>LIVE WEBSITE PREVIEW</span><span id="deviceLabel">Desktop · 100%</span></div>
+  <div class="frame" id="frame"><iframe id="preview" title="Website preview" sandbox="allow-scripts allow-forms allow-popups"></iframe></div>
+</main>
+</div>
+<script>
+const defaults={
+ restaurant:{brand:"Olive & Ember",logo:"",accent:"#a65e35",font:"serif",heroTitle:"Good food. Good company.",heroText:"Seasonal ingredients, thoughtful cooking, and a warm table waiting for you.",heroImage:"https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1800&q=85",heroButton:"Explore our menu",aboutTitle:"A little about us",aboutText:"We believe the best meals are made slowly, shared generously, and remembered long after the last bite. Join us for honest food and warm hospitality.",aboutImage:"https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=1000&q=85",items:[["House special pasta","Fresh herbs, parmesan and our slow-cooked tomato sauce","Rs. 1,250"],["Grilled chicken","Chargrilled chicken, seasonal vegetables and lemon butter","Rs. 1,450"],["Chocolate fondant","Warm chocolate centre with vanilla cream","Rs. 650"]],sectionTitle:"Guest favourites",gallery:"https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=900&q=80",contactTitle:"Come hungry. Leave happy.",phone:"+92 300 1234567",address:"Main Boulevard, Multan, Pakistan",footer:"Made with care. See you at the table."},
+ business:{brand:"The Good Place",logo:"",accent:"#26766d",font:"sans",heroTitle:"A better experience starts here.",heroText:"Friendly service, thoughtful details, and quality you can count on.",heroImage:"https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=1800&q=85",heroButton:"Get in touch",aboutTitle:"Who we are",aboutText:"We help our community with reliable service and a personal approach. Tell us what you need and our team will take care of the details.",aboutImage:"https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&w=1000&q=85",items:[["Personal service","A friendly team focused on your needs",""],["Quality you can trust","Careful work and attention to detail",""],["Simple booking","Get started with one quick message",""]],sectionTitle:"Why choose us",contactTitle:"Let's talk about what you need.",phone:"+92 300 1234567",address:"Multan, Pakistan",footer:"Thank you for supporting local business."},
+ portfolio:{brand:"Alex Morgan",logo:"",accent:"#8a6a4f",font:"serif",heroTitle:"I make thoughtful digital experiences.",heroText:"Designer and developer helping good ideas become useful, beautiful products.",heroImage:"https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1800&q=85",heroButton:"Start a conversation",aboutTitle:"A bit about me",aboutText:"I work across design and development to create clear, accessible digital experiences. I enjoy solving complex problems with simple ideas.",aboutImage:"https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1000&q=85",items:[["Web design","Clean, responsive interfaces"],["Development","Fast and accessible websites"],["Creative direction","A consistent visual identity"]],sectionTitle:"What I do",contactTitle:"Have a project in mind?",phone:"",address:"Available worldwide",footer:"© 2026 Alex Morgan"},
+ agency:{brand:"Northstar Studio",logo:"",accent:"#7057c8",font:"sans",heroTitle:"We build digital things that move business forward.",heroText:"Strategy, design, and technology for ambitious teams.",heroImage:"https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=1800&q=85",heroButton:"Discuss a project",aboutTitle:"Small team. Big thinking.",aboutText:"We partner with people who want to make useful things. From the first sketch to launch day, we bring clarity and craft to every step.",aboutImage:"https://images.unsplash.com/photo-1521737711867-e3b97375f902?auto=format&fit=crop&w=1000&q=85",items:[["Web experiences","Fast, responsive websites built around your users."],["Product development","From MVP to scalable digital products."],["Creative strategy","Clear positioning and thoughtful design systems."]],sectionTitle:"What we do",contactTitle:"Let's make something meaningful.",phone:"+92 300 1234567",address:"Multan, Pakistan",footer:"© 2026 Northstar Studio. All rights reserved."}
+};
+let state,sections;
+const sectionNames={hero:"Hero",about:"About",menu:"Menu / Services",gallery:"Gallery",contact:"Contact"};
+const sectionDefaults=["hero","about","menu","gallery","contact"];
+function fresh(key){let d=structuredClone(defaults[key]);return {...d,template:key,instagram:"",sections:sectionDefaults.map(id=>({id,visible:true}))}}
+function el(id){return document.getElementById(id)}
+function esc(s=""){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function safeUrl(s){try{let u=new URL(s);return ["http:","https:"].includes(u.protocol)?u.href:"#"}catch{return "#"}}
+function loadTemplate(key){state=fresh(key);el("template").value=key;renderControls();update()}
+function resetProject(){loadTemplate(state.template)}
+function bind(id,key){el(id).value=state[key]??"";el(id).addEventListener("input",()=>{state[key]=el(id).value;update()})}
+function renderControls(){
+ ["brand","logo","accent","font","phone","address","instagram","footer"].forEach(id=>{el(id).value=state[id]??""});
+ el("colorValue").textContent=state.accent;
+ ["brand","logo","accent","font","phone","address","instagram","footer"].forEach(id=>{el(id).oninput=el(id).onchange=()=>{state[id]=el(id).value;el("colorValue").textContent=state.accent;update()}})
+ renderSectionList();renderEditors();
+}
+function renderSectionList(){
+ el("sectionList").innerHTML=state.sections.map((s,i)=>`<div class="section-row"><span>${sectionNames[s.id]}</span><div><button title="Move up" ${i===0?"disabled":""} onclick="moveSection(${i},-1)">↑</button><button title="Move down" ${i===state.sections.length-1?"disabled":""} onclick="moveSection(${i},1)">↓</button><button title="Show or hide" onclick="toggleSection('${s.id}')">${s.visible?"◉":"○"}</button></div></div>`).join("");
+}
+function moveSection(i,dir){let j=i+dir;if(j<0||j>=state.sections.length)return;[state.sections[i],state.sections[j]]=[state.sections[j],state.sections[i]];renderSectionList();update()}
+function toggleSection(id){let s=state.sections.find(x=>x.id===id);s.visible=!s.visible;renderSectionList();update()}
+function field(label,key,value,area=false){return `<div class="field"><label>${label}</label>${area?`<textarea data-key="${key}">${esc(value||"")}</textarea>`:`<input data-key="${key}" value="${esc(value||"")}">`}</div>`}
+function renderEditors(){
+ const blocks={
+ hero:`${field("Headline","heroTitle",state.heroTitle,true)}${field("Short description","heroText",state.heroText,true)}${field("Hero image URL","heroImage",state.heroImage)}${field("Button label","heroButton",state.heroButton)}`,
+ about:`${field("Section heading","aboutTitle",state.aboutTitle)}${field("About text","aboutText",state.aboutText,true)}${field("About image URL","aboutImage",state.aboutImage)}`,
+ menu:`${field("Section heading","sectionTitle",state.sectionTitle)}${state.items.map((it,i)=>`<div class="editor-section"><summary>Item ${i+1}</summary>${field("Name",`item${i}name`,it[0])}${field("Description",`item${i}desc`,it[1],true)}${field("Price / detail (optional)",`item${i}price`,it[2]||"")}</div>`).join("")}`,
+ gallery:`${field("Gallery image URL","galleryImage",state.galleryImage||state.heroImage)}`,
+ contact:`${field("Contact heading","contactTitle",state.contactTitle)}`
+ };
+ el("sectionEditors").innerHTML=state.sections.map(s=>`<details class="editor-section" ${s.id==="hero"||s.id==="menu"?"open":""} ${!s.visible?"style='opacity:.55'":""}><summary>${sectionNames[s.id]} settings ${!s.visible?"(hidden)":""}</summary>${blocks[s.id]}</details>`).join("");
+ el("sectionEditors").querySelectorAll("[data-key]").forEach(input=>input.addEventListener("input",()=>{let k=input.dataset.key;if(k.startsWith("item")){let m=k.match(/^item(\\d+)(name|desc|price)$/);if(m)state.items[+m[1]][({name:0,desc:1,price:2})[m[2]]]=input.value}else state[k]=input.value;update()}));
+}
+function getVisible(id){return state.sections.some(s=>s.id===id&&s.visible)}
+function renderSite(d){
+ const serif=d.font==="serif"?"Georgia,serif":"Arial,sans-serif",a=esc(d.accent),brand=esc(d.logo||d.brand);
+ const menu=d.items.map(it=>`<article class="dish"><div><h3>${esc(it[0])}</h3><p>${esc(it[1])}</p></div>${it[2]?`<b>${esc(it[2])}</b>`:""}</article>`).join("");
+ const parts=[];
+ if(getVisible("hero"))parts.push(`<section class="hero"><div class="hero-copy"><span class="eyebrow">${esc(d.brand)}</span><h1>${esc(d.heroTitle)}</h1><p>${esc(d.heroText)}</p><a class="cta" href="#contact">${esc(d.heroButton||"Get in touch")} ↗</a></div><div class="hero-photo" style="background-image:url('${safeUrl(d.heroImage)}')"></div></section>`);
+ if(getVisible("about"))parts.push(`<section class="about" id="about"><div class="about-photo" style="background-image:url('${safeUrl(d.aboutImage)}')"></div><div><span class="eyebrow">OUR STORY</span><h2>${esc(d.aboutTitle)}</h2><p>${esc(d.aboutText)}</p></div></section>`);
+ if(getVisible("menu"))parts.push(`<section class="menu" id="menu"><span class="eyebrow">MADE WITH CARE</span><h2>${esc(d.sectionTitle)}</h2><div class="dishes">${menu}</div></section>`);
+ if(getVisible("gallery"))parts.push(`<section class="gallery"><div class="gallery-image" style="background-image:url('${safeUrl(d.galleryImage||d.heroImage)}')"></div><div><span class="eyebrow">A PLACE TO GATHER</span><h2>Good moments happen around the table.</h2><p>Come by, settle in, and make yourself at home.</p></div></section>`);
+ if(getVisible("contact"))parts.push(`<section class="contact" id="contact"><span class="eyebrow">VISIT / SAY HELLO</span><h2>${esc(d.contactTitle)}</h2><div class="contact-details">${d.phone?`<a href="https://wa.me/${d.phone.replace(/\\D/g,"")}">WhatsApp · ${esc(d.phone)}</a>`:""}${d.address?`<span>${esc(d.address)}</span>`:""}${d.instagram?`<a href="${safeUrl(d.instagram)}" target="_blank" rel="noopener">Instagram ↗</a>`:""}</div></section>`);
+ return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(d.brand)}</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet"><style>
+ *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;color:#29251f;background:#fbf8f2;font-family:${serif}}a{color:inherit;text-decoration:none}.nav{height:78px;padding:0 7vw;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #e9e2d8;background:#fbf8f2}.brand{font-size:23px;font-weight:700;letter-spacing:-.04em}.navlinks{display:flex;gap:30px;font:12px 'DM Sans',sans-serif;color:#615b53}.navlinks a:hover{color:${a}}.navbutton{border:1px solid ${a};padding:11px 18px;font:600 11px 'DM Sans',sans-serif;letter-spacing:.05em;text-transform:uppercase}.hero{min-height:590px;display:grid;grid-template-columns:1fr 1fr}.hero-copy{padding:110px 8vw 90px 10vw;display:flex;flex-direction:column;align-items:flex-start;justify-content:center}.eyebrow{font:700 10px 'DM Sans',sans-serif;letter-spacing:.2em;color:${a};text-transform:uppercase}.hero h1{font-size:clamp(45px,5.5vw,76px);line-height:1.04;letter-spacing:-.045em;font-weight:500;margin:22px 0}.hero p,.about p,.gallery p{font:15px/1.9 'DM Sans',sans-serif;color:#756e64;max-width:440px}.cta{display:inline-block;background:${a};color:white;padding:15px 23px;margin-top:22px;font:600 11px 'DM Sans',sans-serif;letter-spacing:.08em;text-transform:uppercase}.hero-photo,.about-photo,.gallery-image{background-size:cover;background-position:center;min-height:430px}.about{padding:105px 12vw;display:grid;grid-template-columns:1fr 1fr;gap:9%;align-items:center;background:#f1ece3}.about-photo{height:390px}.about h2,.menu h2,.gallery h2,.contact h2{font-size:clamp(34px,4vw,52px);font-weight:500;line-height:1.12;letter-spacing:-.035em;margin:16px 0}.menu{text-align:center;padding:100px 12vw}.dishes{max-width:780px;margin:45px auto 0;text-align:left}.dish{display:flex;justify-content:space-between;gap:20px;padding:22px 0;border-bottom:1px solid #e4ddd2}.dish h3{font-size:20px;font-weight:500;margin:0 0 6px}.dish p{font:13px/1.6 'DM Sans',sans-serif;color:#81796f;margin:0}.dish b{font:600 13px 'DM Sans',sans-serif;color:${a};white-space:nowrap}.gallery{display:grid;grid-template-columns:1.1fr .9fr;align-items:center;background:#292720;color:#fff}.gallery-image{min-height:440px}.gallery>div:last-child{padding:60px 9vw}.gallery p{color:#c7c0b5}.contact{text-align:center;padding:95px 20px;background:#eee7dc}.contact-details{display:flex;justify-content:center;gap:28px;flex-wrap:wrap;font:13px 'DM Sans',sans-serif;color:#6f675e;margin-top:28px}.contact-details a:hover{color:${a}}footer{padding:25px 7vw;background:#292720;color:#c7c0b5;display:flex;justify-content:space-between;gap:15px;font:11px 'DM Sans',sans-serif}
+ @media(max-width:700px){.nav{height:68px;padding:0 5vw}.navlinks{display:none}.hero{grid-template-columns:1fr}.hero-copy{padding:75px 8vw}.hero-photo{min-height:310px;grid-row:1}.about,.gallery{grid-template-columns:1fr}.about{padding:70px 8vw}.about-photo{height:280px;min-height:280px}.menu{padding:75px 8vw}.gallery-image{min-height:280px}.gallery>div:last-child{padding:55px 8vw}.contact{padding:75px 8vw}footer{padding:22px 6vw;flex-direction:column}}
+ </style></head><body><header class="nav"><a class="brand" href="#">${brand}</a><nav class="navlinks"><a href="#about">Our story</a><a href="#menu">Menu / Services</a><a href="#contact">Contact</a></nav><a class="navbutton" href="#contact">Let's talk</a></header><main>${parts.join("")}</main><footer><span>${esc(d.footer||("© "+new Date().getFullYear()+" "+d.brand))}</span><span>${esc(d.address||"")}</span></footer></body></html>`;
+}
+function update(){el("colorValue").textContent=state.accent;el("preview").srcdoc=renderSite(state)}
+function setDevice(device){let f=el("frame");f.style.maxWidth=device==="desktop"?"1200px":device==="tablet"?"768px":"390px";el("deviceLabel").textContent=device[0].toUpperCase()+device.slice(1)+" · "+(device==="desktop"?"100%":device==="tablet"?"768px":"390px")}
+function saveProject(){localStorage.setItem("pagecraft-project",JSON.stringify(state));el("saveStatus").textContent="Saved ✓";setTimeout(()=>el("saveStatus").textContent="Saved locally",1800)}
+function exportHTML(){let blob=new Blob([renderSite(state)],{type:"text/html;charset=utf-8"}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download=(state.brand||"website").toLowerCase().replace(/[^a-z0-9]+/g,"-")+".html";a.click();URL.revokeObjectURL(url)}
+function init(){let saved=localStorage.getItem("pagecraft-project");if(saved){try{state=JSON.parse(saved)}catch{state=fresh("restaurant")}}else state=fresh("restaurant");el("template").value=state.template||"restaurant";renderControls();update()}
+init();
+</script>
+</body></html>

@@ -1,11 +1,796 @@
 <!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-950 text-slate-100">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PageCraft Studio - Website Builder Dashboard</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Fonts for UI -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      theme: {s
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['Fira Code', 'monospace'],
+          },
+          colors: {
+            brand: {
+              50: '#f0f7ff',
+              100: '#e0effe',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Custom Scrollbar for Sleek Dark Theme */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0f172a;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #475569;
+    }
+    /* Device Frame Animation */
+    .viewport-container {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+  </style>
+</head>
+<body class="h-full font-sans antialiased flex flex-col overflow-hidden select-none">
+
+  <!-- TOP HEADER / NAV BAR -->
+  <header class="h-16 bg-slate-900 border-b border-slate-800 flex items-center justify-between px-4 z-20 shrink-0">
+    <!-- Brand / Logo -->
+    <div class="flex items-center space-x-3">
+      <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center text-white shadow-lg shadow-blue-500/30">
+        <i class="fa-solid font-bold fa-wand-magic-sparkles text-lg"></i>
+      </div>
+      <div>
+        <h1 class="text-base font-bold bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent leading-tight">
+          PageCraft <span class="text-xs px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20 font-medium ml-1">Studio</span>
+        </h1>
+        <p class="text-xs text-slate-400 hidden sm:block">No-Code Live HTML Generator</p>
+      </div>
+    </div>
+
+    <!-- Responsive Device Switcher Controls -->
+    <div class="flex items-center bg-slate-950 p-1 rounded-xl border border-slate-800 space-x-1 shadow-inner">
+      <button id="btn-desktop" onclick="setViewport('desktop')" class="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-200 bg-slate-800 shadow flex items-center space-x-1.5 transition-all">
+        <i class="fa-solid fa-desktop text-blue-400"></i>
+        <span class="hidden md:inline">Desktop</span>
+      </button>
+      <button id="btn-tablet" onclick="setViewport('tablet')" class="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-slate-200 flex items-center space-x-1.5 transition-all">
+        <i class="fa-solid fa-tablet-screen-button"></i>
+        <span class="hidden md:inline">Tablet</span>
+      </button>
+      <button id="btn-mobile" onclick="setViewport('mobile')" class="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-slate-200 flex items-center space-x-1.5 transition-all">
+        <i class="fa-solid fa-mobile-screen-button"></i>
+        <span class="hidden md:inline">Mobile</span>
+      </button>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="flex items-center space-x-2">
+      <button onclick="resetToTemplate()" title="Reset to Template Defaults" class="p-2 text-slate-400 hover:text-slate-200 hover:bg-slate-800 rounded-lg transition-colors">
+        <i class="fa-solid fa-rotate-left"></i>
+      </button>
+      <button onclick="clearCanvas()" title="Clear All Text Content" class="p-2 text-slate-400 hover:text-red-400 hover:bg-slate-800 rounded-lg transition-colors">
+        <i class="fa-solid fa-trash-can"></i>
+      </button>
+
+      <div class="h-5 w-[1px] bg-slate-800 mx-1"></div>
+
+      <button onclick="openModal()" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 flex items-center space-x-1.5 transition-colors">
+        <i class="fa-solid fa-code text-indigo-400"></i>
+        <span>View HTML</span>
+      </button>
+
+      <button onclick="downloadHTML()" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-lg shadow-blue-600/20 flex items-center space-x-1.5 transition-all">
+        <i class="fa-solid fa-download"></i>
+        <span>Export File</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN DASHBOARD CONTENT AREA -->
+  <div class="flex-1 flex overflow-hidden">
+    
+    <!-- LEFT SIDEBAR: BUILDER CONTROLS & EDITOR -->
+    <aside class="w-80 md:w-96 bg-slate-900 border-r border-slate-800 flex flex-col shrink-0 z-10">
+      
+      <!-- TAB NAVIGATION -->
+      <div class="flex border-b border-slate-800 bg-slate-950/50">
+        <button id="tab-btn-customizer" onclick="switchTab('customizer')" class="flex-1 py-3 text-xs font-semibold border-b-2 border-blue-500 text-blue-400 flex items-center justify-center space-x-2 transition-colors">
+          <i class="fa-solid fa-sliders"></i>
+          <span>Visual Editor</span>
+        </button>
+        <button id="tab-btn-code" onclick="switchTab('code')" class="flex-1 py-3 text-xs font-semibold border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center justify-center space-x-2 transition-colors">
+          <i class="fa-solid fa-code"></i>
+          <span>Raw Code Editor</span>
+        </button>
+      </div>
+
+      <!-- SIDEBAR CONTROLS CONTAINER -->
+      <div class="flex-1 overflow-y-auto p-4 space-y-6">
+        
+        <!-- VISUAL EDITOR TAB -->
+        <div id="tab-customizer" class="space-y-6">
+          
+          <!-- Template Selector Section -->
+          <div class="space-y-2">
+            <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center justify-between">
+              <span>Choose Template</span>
+              <span class="text-[10px] text-blue-400 font-normal">4 Ready Presets</span>
+            </label>
+            <div class="grid grid-cols-2 gap-2">
+              <button onclick="loadTemplate('saas')" class="template-card p-2.5 text-left rounded-xl border border-slate-800 bg-slate-950 hover:border-blue-500/50 hover:bg-slate-800/50 transition-all group">
+                <div class="text-xs font-semibold text-slate-200 group-hover:text-blue-400">SaaS Landing</div>
+                <div class="text-[10px] text-slate-500 mt-0.5">Modern Tech Launch</div>
+              </button>
+              <button onclick="loadTemplate('portfolio')" class="template-card p-2.5 text-left rounded-xl border border-slate-800 bg-slate-950 hover:border-blue-500/50 hover:bg-slate-800/50 transition-all group">
+                <div class="text-xs font-semibold text-slate-200 group-hover:text-blue-400">Personal Portfolio</div>
+                <div class="text-[10px] text-slate-500 mt-0.5">Minimalist Creator</div>
+              </button>
+              <button onclick="loadTemplate('restaurant')" class="template-card p-2.5 text-left rounded-xl border border-slate-800 bg-slate-950 hover:border-blue-500/50 hover:bg-slate-800/50 transition-all group">
+                <div class="text-xs font-semibold text-slate-200 group-hover:text-blue-400">Bistro & Dining</div>
+                <div class="text-[10px] text-slate-500 mt-0.5">Warm Hospitality</div>
+              </button>
+              <button onclick="loadTemplate('agency')" class="template-card p-2.5 text-left rounded-xl border border-slate-800 bg-slate-950 hover:border-blue-500/50 hover:bg-slate-800/50 transition-all group">
+                <div class="text-xs font-semibold text-slate-200 group-hover:text-blue-400">Digital Agency</div>
+                <div class="text-[10px] text-slate-500 mt-0.5">Bold Creative Studio</div>
+              </button>
+            </div>
+          </div>
+
+          <hr class="border-slate-800">
+
+          <!-- Global Styling Controls -->
+          <div class="space-y-3">
+            <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Global Styling</h3>
+            
+            <div class="grid grid-cols-2 gap-3">
+              <!-- Color Picker -->
+              <div>
+                <label class="block text-xs text-slate-300 mb-1">Primary Color</label>
+                <div class="flex items-center space-x-2 bg-slate-950 border border-slate-800 p-1.5 rounded-lg">
+                  <input type="color" id="input-accent-color" value="#3b82f6" oninput="updatePage()" class="w-6 h-6 rounded border-0 bg-transparent cursor-pointer">
+                  <span id="hex-accent-color" class="text-xs font-mono text-slate-400">#3b82f6</span>
+                </div>
+              </div>
+
+              <!-- Font Selector -->
+              <div>
+                <label class="block text-xs text-slate-300 mb-1">Typography</label>
+                <select id="input-font-family" onchange="updatePage()" class="w-full bg-slate-950 border border-slate-800 text-xs text-slate-200 rounded-lg p-2 focus:outline-none focus:border-blue-500">
+                  <option value="Inter">Inter (Sans)</option>
+                  <option value="Playfair Display">Playfair (Serif)</option>
+                  <option value="Fira Code">Fira Code (Mono)</option>
+                  <option value="System">System Default</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <hr class="border-slate-800">
+
+          <!-- Header & Hero Content Editable Fields -->
+          <div class="space-y-4">
+            <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Header & Hero Content</h3>
+
+            <div>
+              <label class="block text-xs text-slate-300 mb-1">Brand Name</label>
+              <input type="text" id="input-brand-name" oninput="updatePage()" class="w-full bg-slate-950 border border-slate-800 text-xs text-slate-200 rounded-lg p-2.5 focus:outline-none focus:border-blue-500">
+            </div>
+
+            <div>
+              <label class="block text-xs text-slate-300 mb-1">Accent Tagline Badge</label>
+              <input type="text" id="input-tagline" oninput="updatePage()" class="w-full bg-slate-950 border border-slate-800 text-xs text-slate-200 rounded-lg p-2.5 focus:outline-none focus:border-blue-500">
+            </div>
+
+            <div>
+              <label class="block text-xs text-slate-300 mb-1">Main Headline</label>
+              <textarea id="input-hero-title" rows="2" oninput="updatePage()" class="w-full bg-slate-950 border border-slate-800 text-xs text-slate-200 rounded-lg p-2.5 focus:outline-none focus:border-blue-500"></textarea>
+            </div>
+
+            <div>
+              <label class="block text-xs text-slate-300 mb-1">Sub-headline Description</label>
+              <textarea id="input-hero-subtitle" rows="3" oninput="updatePage()" class="w-full bg-slate-950 border border-slate-800 text-xs text-slate-200 rounded-lg p-2.5 focus:outline-none focus:border-blue-500"></textarea>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="block text-xs text-slate-300 mb-1">Primary CTA Label</label>
+                <input type="text" id="input-cta-text" oninput="updatePage()" class="w-full bg-slate-950 border border-slate-800 text-xs text-slate-200 rounded-lg p-2 focus:outline-none focus:border-blue-500">
+              </div>
+              <div>
+                <label class="block text-xs text-slate-300 mb-1">Secondary CTA Label</label>
+                <input type="text" id="input-secondary-cta-text" oninput="updatePage()" class="w-full bg-slate-950 border border-slate-800 text-xs text-slate-200 rounded-lg p-2 focus:outline-none focus:border-blue-500">
+              </div>
+            </div>
+          </div>
+
+          <hr class="border-slate-800">
+
+          <!-- Features Section Editable Fields -->
+          <div class="space-y-4">
+            <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Features Section</h3>
+
+            <div>
+              <label class="block text-xs text-slate-300 mb-1">Features Heading</label>
+              <input type="text" id="input-features-title" oninput="updatePage()" class="w-full bg-slate-950 border border-slate-800 text-xs text-slate-200 rounded-lg p-2.5 focus:outline-none focus:border-blue-500">
+            </div>
+
+            <!-- Feature 1 -->
+            <div class="p-3 bg-slate-950 border border-slate-800/80 rounded-xl space-y-2">
+              <span class="text-[11px] font-medium text-slate-400">Card 1</span>
+              <input type="text" id="input-f1-title" oninput="updatePage()" placeholder="Feature 1 Title" class="w-full bg-slate-900 border border-slate-800 text-xs text-slate-200 rounded p-2 focus:outline-none focus:border-blue-500">
+              <textarea id="input-f1-desc" rows="2" oninput="updatePage()" placeholder="Feature 1 Description" class="w-full bg-slate-900 border border-slate-800 text-xs text-slate-200 rounded p-2 focus:outline-none focus:border-blue-500"></textarea>
+            </div>
+
+            <!-- Feature 2 -->
+            <div class="p-3 bg-slate-950 border border-slate-800/80 rounded-xl space-y-2">
+              <span class="text-[11px] font-medium text-slate-400">Card 2</span>
+              <input type="text" id="input-f2-title" oninput="updatePage()" placeholder="Feature 2 Title" class="w-full bg-slate-900 border border-slate-800 text-xs text-slate-200 rounded p-2 focus:outline-none focus:border-blue-500">
+              <textarea id="input-f2-desc" rows="2" oninput="updatePage()" placeholder="Feature 2 Description" class="w-full bg-slate-900 border border-slate-800 text-xs text-slate-200 rounded p-2 focus:outline-none focus:border-blue-500"></textarea>
+            </div>
+
+            <!-- Feature 3 -->
+            <div class="p-3 bg-slate-950 border border-slate-800/80 rounded-xl space-y-2">
+              <span class="text-[11px] font-medium text-slate-400">Card 3</span>
+              <input type="text" id="input-f3-title" oninput="updatePage()" placeholder="Feature 3 Title" class="w-full bg-slate-900 border border-slate-800 text-xs text-slate-200 rounded p-2 focus:outline-none focus:border-blue-500">
+              <textarea id="input-f3-desc" rows="2" oninput="updatePage()" placeholder="Feature 3 Description" class="w-full bg-slate-900 border border-slate-800 text-xs text-slate-200 rounded p-2 focus:outline-none focus:border-blue-500"></textarea>
+            </div>
+          </div>
+
+          <hr class="border-slate-800">
+
+          <!-- Footer Content Editable Fields -->
+          <div class="space-y-4 pb-4">
+            <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Footer Section</h3>
+            <div>
+              <label class="block text-xs text-slate-300 mb-1">Footer Copyright Notice</label>
+              <input type="text" id="input-footer-text" oninput="updatePage()" class="w-full bg-slate-950 border border-slate-800 text-xs text-slate-200 rounded-lg p-2.5 focus:outline-none focus:border-blue-500">
+            </div>
+          </div>
+
+        </div>
+
+        <!-- RAW CODE EDITOR TAB -->
+        <div id="tab-code" class="hidden h-full flex flex-col space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-xs text-slate-400 font-mono">Live HTML Editor</span>
+            <span class="text-[10px] text-slate-500">Direct Edit Mode</span>
+          </div>
+          <textarea id="raw-code-input" oninput="onRawCodeEdit()" class="w-full h-[600px] bg-slate-950 border border-slate-800 text-xs font-mono text-emerald-400 p-3 rounded-xl focus:outline-none focus:border-blue-500 leading-relaxed resize-none"></textarea>
+        </div>
+
+      </div>
+    </aside>
+
+    <!-- RIGHT PANEL: LIVE INTERACTIVE PREVIEW -->
+    <main class="flex-1 bg-slate-950 flex flex-col items-center justify-center p-4 md:p-8 overflow-hidden relative">
+      <!-- Grid pattern background overlay -->
+      <div class="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:2rem_2rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] opacity-30 pointer-events-none"></div>
+
+      <!-- Live Viewport Container -->
+      <div id="viewport-frame" class="viewport-container w-full h-full max-w-full bg-white rounded-2xl shadow-2xl overflow-hidden border border-slate-800 relative z-10 flex flex-col">
+        <!-- Browser Bar Simulation -->
+        <div class="h-8 bg-slate-900 border-b border-slate-800 flex items-center px-3 space-x-2 shrink-0">
+          <div class="flex space-x-1.5">
+            <div class="w-2.5 h-2.5 rounded-full bg-red-500/80"></div>
+            <div class="w-2.5 h-2.5 rounded-full bg-yellow-500/80"></div>
+            <div class="w-2.5 h-2.5 rounded-full bg-green-500/80"></div>
+          </div>
+          <div class="flex-1 max-w-xs mx-auto bg-slate-950 rounded-md px-3 py-0.5 text-[11px] font-mono text-slate-400 text-center truncate border border-slate-800/80">
+            https://my-preview-site.craft
+          </div>
+          <span id="viewport-label" class="text-[10px] font-mono text-slate-500 uppercase">100% Full Width</span>
+        </div>
+
+        <!-- Dynamic Live Render IFrame -->
+        <iframe id="preview-iframe" class="w-full flex-1 bg-white border-0"></iframe>
+      </div>
+    </main>
+
+  </div>
+
+  <!-- HTML OUTPUT & COPY MODAL -->
+  <div id="code-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-slate-900 border border-slate-800 w-full max-w-3xl rounded-2xl shadow-2xl flex flex-col overflow-hidden max-h-[85vh]">
+      
+      <!-- Modal Header -->
+      <div class="px-6 py-4 border-b border-slate-800 flex items-center justify-between">
+        <div class="flex items-center space-x-2">
+          <i class="fa-solid fa-code text-blue-400"></i>
+          <h3 class="text-sm font-semibold text-slate-100">Exported Standalone HTML Source</h3>
+        </div>
+        <button onclick="closeModal()" class="text-slate-400 hover:text-white p-1 rounded-lg">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <!-- Modal Body (Code View) -->
+      <div class="p-4 flex-1 overflow-hidden bg-slate-950">
+        <textarea id="modal-code-area" readonly class="w-full h-96 bg-transparent text-xs font-mono text-blue-300 focus:outline-none resize-none p-2"></textarea>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="px-6 py-4 border-t border-slate-800 bg-slate-900/50 flex items-center justify-between">
+        <span class="text-xs text-slate-400">Includes embedded styles, responsiveness & Google fonts.</span>
+        <div class="flex space-x-3">
+          <button onclick="copyModalCode()" class="px-4 py-2 text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg transition-colors flex items-center space-x-2">
+            <i class="fa-solid fa-copy"></i>
+            <span id="copy-btn-text">Copy Code</span>
+          </button>
+          <button onclick="downloadHTML(); closeModal();" class="px-4 py-2 text-xs font-semibold bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-colors flex items-center space-x-2">
+            <i class="fa-solid fa-download"></i>
+            <span>Download .html</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT APP ENGINE -->
+  <script>
+    // PRESET TEMPLATE DATABASE
+    const TEMPLATES = {
+      saas: {
+        brandName: "CloudPulse",
+        tagline: "🚀 NEXT-GEN ANALYTICS ENGINE",
+        heroTitle: "Build & scale your app data in real time",
+        heroSubtitle: "Empower your product team with instant insights, automated reporting, and deep real-time customer behavior metrics.",
+        ctaText: "Start Free Trial",
+        secondaryCtaText: "Schedule Demo",
+        accentColor: "#2563eb",
+        fontFamily: "Inter",
+        featuresTitle: "Engineered for High-Performance Teams",
+        f1Title: "Instant Analytics",
+        f1Desc: "Sub-second processing for all database queries and streaming live metrics.",
+        f2Title: "Enterprise Security",
+        f2Desc: "End-to-end encryption with SOC-2 Compliance built right into your core.",
+        f3Title: "Smart Automation",
+        f3Desc: "Trigger custom alerts and Webhooks straight to your Slack or Email.",
+        footerText: "© 2026 CloudPulse Inc. All rights reserved."
+      },
+      portfolio: {
+        brandName: "Alex Morgan",
+        tagline: "🎨 SENIOR PRODUCT DESIGNER",
+        heroTitle: "Crafting digital experiences with purpose",
+        heroSubtitle: "I create intuitive interfaces, robust digital design systems, and delightful web experiences for innovative startups.",
+        ctaText: "View Featured Works",
+        secondaryCtaText: "Get In Touch",
+        accentColor: "#059669",
+        fontFamily: "Playfair Display",
+        featuresTitle: "Selected Design Capabilities",
+        f1Title: "UI & UX Design",
+        f1Desc: "User-centric design solutions crafted with high precision and clean systems.",
+        f2Title: "Interactive Prototypes",
+        f2Desc: "Bringing static screens to life through micro-interactions and smooth transitions.",
+        f3Title: "Brand Architecture",
+        f3Desc: "Developing cohesive visual identities from logo marks to digital design guidelines.",
+        footerText: "© 2026 Alex Morgan Studio. Designed with passion."
+      },
+      restaurant: {
+        brandName: "L'Aura Bistro",
+        tagline: "🍷 FINE ARTISANAL CUISINE",
+        heroTitle: "An unforgettable taste of seasonal flavors",
+        heroSubtitle: "Experience handcrafted culinary delights prepared daily with fresh organic ingredients from regional local farms.",
+        ctaText: "Reserve a Table",
+        secondaryCtaText: "Explore Menu",
+        accentColor: "#d97706",
+        fontFamily: "Playfair Display",
+        featuresTitle: "The Bistro Dining Experience",
+        f1Title: "Farm-to-Table Fresh",
+        f1Desc: "Sourced daily from our trusted network of sustainable organic farmers.",
+        f2Title: "Sommelier Selections",
+        f2Desc: "Pair your dish with handpicked vintages from world-renowned wineries.",
+        f3Title: "Private Event Dining",
+        f3Desc: "Host your special occasions in our exclusive subterranean dining cellar.",
+        footerText: "© 2026 L'Aura Bistro. All rights reserved."
+      },
+      agency: {
+        brandName: "Vanguard Creative",
+        tagline: "⚡ FULL-SERVICE DIGITAL STUDIO",
+        heroTitle: "We turn bold concepts into market leaders",
+        heroSubtitle: "We partner with ambitious brands to engineer digital products, memorable campaigns, and modern web applications.",
+        ctaText: "Start a Project",
+        secondaryCtaText: "Our Case Studies",
+        accentColor: "#7c3aed",
+        fontFamily: "Fira Code",
+        featuresTitle: "Core Strategic Services",
+        f1Title: "Web & Mobile Development",
+        f1Desc: "Custom software tailored for maximum scalability, speed, and reliability.",
+        f2Title: "Digital Growth Strategy",
+        f2Desc: "Data-driven marketing campaigns engineered to convert traffic into revenue.",
+        f3Title: "Brand Transformation",
+        f3Desc: "Repositioning businesses for the digital age through modern creative output.",
+        footerText: "© 2026 Vanguard Creative Agency. Built to scale."
+      }
+    };
+
+    // CURRENT APP STATE
+    let currentState = { ...TEMPLATES.saas };
+    let activeTab = 'customizer';
+    let isRawEditMode = false;
+
+    // INITIALIZATION ON LOAD
+    window.addEventListener('DOMContentLoaded', () => {
+      populateInputs(currentState);
+      updatePage();
+    });
+
+    // POPULATE FORM INPUTS WITH STATE
+    function populateInputs(state) {
+      document.getElementById('input-brand-name').value = state.brandName;
+      document.getElementById('input-tagline').value = state.tagline;
+      document.getElementById('input-hero-title').value = state.heroTitle;
+      document.getElementById('input-hero-subtitle').value = state.heroSubtitle;
+      document.getElementById('input-cta-text').value = state.ctaText;
+      document.getElementById('input-secondary-cta-text').value = state.secondaryCtaText;
+      document.getElementById('input-accent-color').value = state.accentColor;
+      document.getElementById('hex-accent-color').innerText = state.accentColor;
+      document.getElementById('input-font-family').value = state.fontFamily;
+      document.getElementById('input-features-title').value = state.featuresTitle;
+      document.getElementById('input-f1-title').value = state.f1Title;
+      document.getElementById('input-f1-desc').value = state.f1Desc;
+      document.getElementById('input-f2-title').value = state.f2Title;
+      document.getElementById('input-f2-desc').value = state.f2Desc;
+      document.getElementById('input-f3-title').value = state.f3Title;
+      document.getElementById('input-f3-desc').value = state.f3Desc;
+      document.getElementById('input-footer-text').value = state.footerText;
+    }
+
+    // READ STATE FROM FORM INPUTS
+    function readInputs() {
+      return {
+        brandName: document.getElementById('input-brand-name').value,
+        tagline: document.getElementById('input-tagline').value,
+        heroTitle: document.getElementById('input-hero-title').value,
+        heroSubtitle: document.getElementById('input-hero-subtitle').value,
+        ctaText: document.getElementById('input-cta-text').value,
+        secondaryCtaText: document.getElementById('input-secondary-cta-text').value,
+        accentColor: document.getElementById('input-accent-color').value,
+        fontFamily: document.getElementById('input-font-family').value,
+        featuresTitle: document.getElementById('input-features-title').value,
+        f1Title: document.getElementById('input-f1-title').value,
+        f1Desc: document.getElementById('input-f1-desc').value,
+        f2Title: document.getElementById('input-f2-title').value,
+        f2Desc: document.getElementById('input-f2-desc').value,
+        f3Title: document.getElementById('input-f3-title').value,
+        f3Desc: document.getElementById('input-f3-desc').value,
+        footerText: document.getElementById('input-footer-text').value
+      };
+    }
+
+    // GENERATE COMPLETE HTML PAGE DOCUMENT
+    function generateHTMLDoc(data) {
+      const hex = data.accentColor || '#3b82f6';
+      const font = data.fontFamily || 'Inter';
+
+      return `<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${escapeHTML(data.brandName)} - Official Website</title>
+  <!-- Google Fonts Loading -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Inter:wght@300;400;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body {
+      font-family: '${font}', sans-serif;
+    }
+  </style>
 </head>
-<body>
-    
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-slate-800">
+
+  <!-- NAVBAR -->
+  <header class="w-full border-b border-slate-800/80 bg-slate-950/80 backdrop-blur-md sticky top-0 z-50">
+    <div class="max-w-6xl mx-auto px-6 h-20 flex items-center justify-between">
+      <div class="text-xl font-bold tracking-tight flex items-center space-x-2">
+        <span class="w-3 h-3 rounded-full" style="background-color: ${hex}"></span>
+        <span>${escapeHTML(data.brandName)}</span>
+      </div>
+      <nav class="hidden md:flex items-center space-x-8 text-sm font-medium text-slate-400">
+        <a href="#features" class="hover:text-white transition-colors">Features</a>
+        <a href="#about" class="hover:text-white transition-colors">About</a>
+        <a href="#contact" class="hover:text-white transition-colors">Contact</a>
+      </nav>
+      <div>
+        <a href="#" class="px-5 py-2.5 rounded-xl text-xs font-semibold text-white transition-all shadow-lg hover:opacity-90 inline-block" style="background-color: ${hex}">
+          ${escapeHTML(data.ctaText)}
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- HERO SECTION -->
+  <main class="flex-1">
+    <section class="max-w-4xl mx-auto px-6 pt-20 pb-16 text-center">
+      <!-- Tagline Badge -->
+      <div class="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full text-xs font-semibold border mb-8" style="border-color: ${hex}40; background-color: ${hex}15; color: ${hex}">
+        <span>${escapeHTML(data.tagline)}</span>
+      </div>
+
+      <!-- Main Headline -->
+      <h1 class="text-4xl md:text-6xl font-extrabold text-white tracking-tight leading-tight mb-6">
+        ${escapeHTML(data.heroTitle)}
+      </h1>
+
+      <!-- Subtitle -->
+      <p class="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto mb-10 leading-relaxed font-light">
+        ${escapeHTML(data.heroSubtitle)}
+      </p>
+
+      <!-- CTA Buttons -->
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+        <a href="#" class="w-full sm:w-auto px-8 py-4 rounded-xl text-sm font-bold text-white shadow-xl transition-all hover:opacity-90 transform hover:-translate-y-0.5" style="background-color: ${hex}">
+          ${escapeHTML(data.ctaText)} <i class="fa-solid fa-arrow-right ml-2 text-xs"></i>
+        </a>
+        <a href="#" class="w-full sm:w-auto px-8 py-4 rounded-xl text-sm font-semibold bg-slate-900 border border-slate-800 text-slate-300 hover:bg-slate-800 transition-all">
+          ${escapeHTML(data.secondaryCtaText)}
+        </a>
+      </div>
+    </section>
+
+    <!-- FEATURES SECTION -->
+    <section id="features" class="max-w-6xl mx-auto px-6 py-16 border-t border-slate-800/60">
+      <div class="text-center mb-16">
+        <h2 class="text-2xl md:text-3xl font-bold text-white tracking-tight">${escapeHTML(data.featuresTitle)}</h2>
+      </div>
+
+      <div class="grid md:grid-cols-3 gap-8">
+        <!-- Feature 1 -->
+        <div class="p-8 rounded-2xl bg-slate-900/60 border border-slate-800 hover:border-slate-700 transition-all group">
+          <div class="w-12 h-12 rounded-xl flex items-center justify-center text-xl mb-6 shadow-md" style="background-color: ${hex}20; color: ${hex}">
+            <i class="fa-solid fa-bolt"></i>
+          </div>
+          <h3 class="text-lg font-bold text-white mb-3 group-hover:text-blue-400 transition-colors">${escapeHTML(data.f1Title)}</h3>
+          <p class="text-sm text-slate-400 leading-relaxed">${escapeHTML(data.f1Desc)}</p>
+        </div>
+
+        <!-- Feature 2 -->
+        <div class="p-8 rounded-2xl bg-slate-900/60 border border-slate-800 hover:border-slate-700 transition-all group">
+          <div class="w-12 h-12 rounded-xl flex items-center justify-center text-xl mb-6 shadow-md" style="background-color: ${hex}20; color: ${hex}">
+            <i class="fa-solid fa-shield-halved"></i>
+          </div>
+          <h3 class="text-lg font-bold text-white mb-3 group-hover:text-blue-400 transition-colors">${escapeHTML(data.f2Title)}</h3>
+          <p class="text-sm text-slate-400 leading-relaxed">${escapeHTML(data.f2Desc)}</p>
+        </div>
+
+        <!-- Feature 3 -->
+        <div class="p-8 rounded-2xl bg-slate-900/60 border border-slate-800 hover:border-slate-700 transition-all group">
+          <div class="w-12 h-12 rounded-xl flex items-center justify-center text-xl mb-6 shadow-md" style="background-color: ${hex}20; color: ${hex}">
+            <i class="fa-solid fa-chart-line"></i>
+          </div>
+          <h3 class="text-lg font-bold text-white mb-3 group-hover:text-blue-400 transition-colors">${escapeHTML(data.f3Title)}</h3>
+          <p class="text-sm text-slate-400 leading-relaxed">${escapeHTML(data.f3Desc)}</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="border-t border-slate-800/80 bg-slate-950 py-8">
+    <div class="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between text-xs text-slate-500">
+      <div>${escapeHTML(data.footerText)}</div>
+      <div class="flex space-x-6 mt-4 md:mt-0">
+        <a href="#" class="hover:text-slate-400">Privacy Policy</a>
+        <a href="#" class="hover:text-slate-400">Terms of Service</a>
+        <a href="#" class="hover:text-slate-400">Contact Support</a>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>`;
+    }
+
+    // HELPER: HTML ESCAPE
+    function escapeHTML(str) {
+      if (!str) return '';
+      return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    // UPDATE PREVIEW & RAW CODE
+    function updatePage() {
+      document.getElementById('hex-accent-color').innerText = document.getElementById('input-accent-color').value;
+
+      if (!isRawEditMode) {
+        currentState = readInputs();
+        const generatedHTML = generateHTMLDoc(currentState);
+        
+        // Write to preview IFrame
+        const iframe = document.getElementById('preview-iframe');
+        iframe.srcdoc = generatedHTML;
+
+        // Sync with Code Editor Textarea
+        document.getElementById('raw-code-input').value = generatedHTML;
+      }
+    }
+
+    // RAW CODE EDIT HANDLER
+    function onRawCodeEdit() {
+      const code = document.getElementById('raw-code-input').value;
+      const iframe = document.getElementById('preview-iframe');
+      iframe.srcdoc = code;
+    }
+
+    // SWITCH TAB (CUSTOMIZER VS RAW CODE)
+    function switchTab(tab) {
+      activeTab = tab;
+      const customizerTab = document.getElementById('tab-customizer');
+      const codeTab = document.getElementById('tab-code');
+      const btnCustomizer = document.getElementById('tab-btn-customizer');
+      const btnCode = document.getElementById('tab-btn-code');
+
+      if (tab === 'customizer') {
+        isRawEditMode = false;
+        customizerTab.classList.remove('hidden');
+        codeTab.classList.add('hidden');
+        
+        btnCustomizer.className = "flex-1 py-3 text-xs font-semibold border-b-2 border-blue-500 text-blue-400 flex items-center justify-center space-x-2 transition-colors";
+        btnCode.className = "flex-1 py-3 text-xs font-semibold border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center justify-center space-x-2 transition-colors";
+        
+        updatePage();
+      } else {
+        isRawEditMode = true;
+        customizerTab.classList.add('hidden');
+        codeTab.classList.remove('hidden');
+
+        btnCode.className = "flex-1 py-3 text-xs font-semibold border-b-2 border-blue-500 text-blue-400 flex items-center justify-center space-x-2 transition-colors";
+        btnCustomizer.className = "flex-1 py-3 text-xs font-semibold border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center justify-center space-x-2 transition-colors";
+      }
+    }
+
+    // LOAD PRESET TEMPLATE
+    function loadTemplate(key) {
+      if (TEMPLATES[key]) {
+        currentState = { ...TEMPLATES[key] };
+        populateInputs(currentState);
+        if (activeTab === 'code') {
+          switchTab('customizer');
+        } else {
+          updatePage();
+        }
+      }
+    }
+
+    // RESET TO CURRENT TEMPLATE DEFAULTS
+    function resetToTemplate() {
+      loadTemplate('saas');
+    }
+
+    // CLEAR ALL INPUT FIELDS
+    function clearCanvas() {
+      const emptyState = {
+        brandName: "My Brand",
+        tagline: "TAGLINE GOES HERE",
+        heroTitle: "Headline Text Goes Here",
+        heroSubtitle: "Add your detailed sub-headline and summary description text here.",
+        ctaText: "Click Here",
+        secondaryCtaText: "Learn More",
+        accentColor: "#3b82f6",
+        fontFamily: "Inter",
+        featuresTitle: "Main Features",
+        f1Title: "Feature One",
+        f1Desc: "Description for feature one goes here.",
+        f2Title: "Feature Two",
+        f2Desc: "Description for feature two goes here.",
+        f3Title: "Feature Three",
+        f3Desc: "Description for feature three goes here.",
+        footerText: "© 2026 My Brand. All rights reserved."
+      };
+      currentState = emptyState;
+      populateInputs(emptyState);
+      updatePage();
+    }
+
+    // RESPONSIVE VIEWPORT SWITCHER
+    function setViewport(device) {
+      const frame = document.getElementById('viewport-frame');
+      const label = document.getElementById('viewport-label');
+      const btnDesktop = document.getElementById('btn-desktop');
+      const btnTablet = document.getElementById('btn-tablet');
+      const btnMobile = document.getElementById('btn-mobile');
+
+      // Reset Button Styles
+      [btnDesktop, btnTablet, btnMobile].forEach(btn => {
+        btn.className = "px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-slate-200 flex items-center space-x-1.5 transition-all";
+      });
+
+      if (device === 'desktop') {
+        frame.style.width = '100%';
+        frame.style.height = '100%';
+        label.innerText = '100% Full Width';
+        btnDesktop.className = "px-3 py-1.5 rounded-lg text-xs font-medium text-slate-200 bg-slate-800 shadow flex items-center space-x-1.5 transition-all";
+      } else if (device === 'tablet') {
+        frame.style.width = '768px';
+        frame.style.height = '100%';
+        label.innerText = '768px Tablet View';
+        btnTablet.className = "px-3 py-1.5 rounded-lg text-xs font-medium text-slate-200 bg-slate-800 shadow flex items-center space-x-1.5 transition-all";
+      } else if (device === 'mobile') {
+        frame.style.width = '375px';
+        frame.style.height = '667px';
+        label.innerText = '375px Mobile View';
+        btnMobile.className = "px-3 py-1.5 rounded-lg text-xs font-medium text-slate-200 bg-slate-800 shadow flex items-center space-x-1.5 transition-all";
+      }
+    }
+
+    // DOWNLOAD GENERATED HTML FILE
+    function downloadHTML() {
+      let content = "";
+      if (isRawEditMode) {
+        content = document.getElementById('raw-code-input').value;
+      } else {
+        content = generateHTMLDoc(readInputs());
+      }
+
+      const blob = new Blob([content], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'index.html';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    // MODAL CONTROL & CODE COPYING
+    function openModal() {
+      const code = isRawEditMode ? document.getElementById('raw-code-input').value : generateHTMLDoc(readInputs());
+      document.getElementById('modal-code-area').value = code;
+      document.getElementById('code-modal').classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('code-modal').classList.add('hidden');
+    }
+
+    function copyModalCode() {
+      const codeArea = document.getElementById('modal-code-area');
+      codeArea.select();
+      document.execCommand('copy');
+
+      const copyBtnText = document.getElementById('copy-btn-text');
+      copyBtnText.innerText = "Copied!";
+      setTimeout(() => {
+        copyBtnText.innerText = "Copy Code";
+      }, 2000);
+    }
+  </script>
 </body>
 </html>
